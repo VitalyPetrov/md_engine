@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm simulation_visual.txt
+./vsmd 2
