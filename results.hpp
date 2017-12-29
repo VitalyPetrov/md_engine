@@ -16,8 +16,6 @@
 * You should have received a copy of the GNU General Public License
 * along with vsmd. If not, see <http://www.gnu.org/licenses/>.
 */
-
-//results.hpp
 #ifndef __RESULTS_H_INCLUDED__ 
 #define __RESULTS_H_INCLUDED__ 
 

@@ -16,8 +16,6 @@
 * You should have received a copy of the GNU General Public License
 * along with vsmd. If not, see <http://www.gnu.org/licenses/>.
 */
-
-//results.cpp
 #include "results.hpp"
 
 Results::Results(GlobalSettings& settings){
@@ -123,7 +121,7 @@ void Results::print_snapshot(const m3Xf& input_positions, const m3Xf& input_velo
   std::ofstream fout;
   fout.open("simulation_visual.txt", std::ios_base::app);
   fout << "ITEM: TIMESTEP" << "\n" << currentTimestep << "\n" << "ITEM: NUMBER OF ATOMS" << "\n" << numParticles << "\n";
-  fout << "ITEM: BOX BOUNDS pp pp pp" << "\n" << 0 << "\t" << 18.3 << "\n" << 0 << "\t" << 18.3 << "\n" << 0 << "\t" << 18.3 << "\n";
+  fout << "ITEM: BOX BOUNDS pp pp pp" << "\n" << 0 << "\t" << 25 << "\n" << 0 << "\t" << 25 << "\n" << 0 << "\t" << 25 << "\n";
   fout << "ITEM: ATOMS id x y z vx vy vz" << "\n";
   for (int i = 0; i < numParticles; i++) {
       x = input_positions(0, i);

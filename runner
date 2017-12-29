@@ -1,4 +1,8 @@
 #!/bin/bash
 
 rm simulation_visual.txt
+#for i in 1 2 4
+#do
+#	./vsmd $i
+#done
 ./vsmd 2

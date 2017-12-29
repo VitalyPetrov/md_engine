@@ -59,4 +59,4 @@ lfNPTberendsen.o : lfNPTberendsen.hpp lfNPTberendsen.cpp results.hpp settings.hp
 
 clean:
 	rm vsmd $(OBJECTS)
-	rm -R data
+		rm -R data

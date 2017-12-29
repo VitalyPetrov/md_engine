@@ -16,8 +16,6 @@
 * You should have received a copy of the GNU General Public License
 * along with vsmd. If not, see <http://www.gnu.org/licenses/>.
 */
-
-//main.cpp
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -34,6 +32,8 @@
 #include "lfNVTberendsen.hpp"
 #include "lfNPTberendsen.hpp"
 using namespace std;
+
+#pragma omp parallel;
 
 int main(int argc, char* argv[]){
   
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
 		cout << "Using precompiled settings." << endl;
 		settings.processid = 1;
 		settings.mode = 1; // Velocity Verlet NVE
-		settings.potential = 2; // Lennard-Jones potential
+		settings.potential = 1; // Lennard-Jones potential
 		settings.gridsize = 7;
 		settings.n = 4 * pow(settings.gridsize, 3); // Number of particles
 		settings.h << 25,  0,  0,
@@ -61,13 +61,13 @@ int main(int argc, char* argv[]){
 					   0,  0, 25;
 		settings.rcutoff = 2.1;
 		settings.deltat = 3E-4; // Timestep
-		settings.t_thermo = 10 * settings.deltat; // t_damp for Berendsen thermostat
+		settings.t_thermo = 100000 * settings.deltat; // t_damp for Berendsen thermostat
 		settings.t_baro = 150*settings.deltat;
-		settings.T_des = 1;
+		settings.T_des = 10.;
 		settings.P_des << 35,  0,  0,
 						   0, 35,  0,
 						   0,  0, 35;
-		settings.nsteps = 2000; // Number of steps
+		settings.nsteps = 30000; // Number of steps
   }
 
   else {
@@ -146,31 +146,39 @@ int main(int argc, char* argv[]){
   }
   
   
-  double TotalTime = 0., currentPotentialEnergy = 0.;
+  double TotalTime = 0., currentPotentialEnergy = 0., currentKineticEnergy = 0., currentTotalEnrgy = 0.;
   Results res(settings);
   initialize(settings,res);
   cout << "Simulation started." << endl;
   switch(settings.mode){
 	case 1: //velocity verlet NVE integrator
-	  for(i = 0;i < settings.nsteps; i++)
+	  for(i = 0; i < settings.nsteps; i++)
 	  {
 			start = omp_get_wtime();
 			verletNVE(settings, res);
 			end = omp_get_wtime();
   			TotalTime += end - start;
+  			currentKineticEnergy = res.get_kinetic_energy();
   			currentPotentialEnergy = res.get_potential_energy();
+  			currentTotalEnrgy = res.get_total_energy();
   			res.print_snapshot(res.get_positions(), res.get_velocities(), settings.n, i);
 			//cout << "Time elapsed for step " << i << " in milliseconds: " << (int)((end-start)*1000) << endl;
-  			cout << "Potential =  " << currentPotentialEnergy  << endl;
+  			cout << i << "\t" << "Kinetic = " << currentKineticEnergy << "\t" << "Potential =  " << currentPotentialEnergy << "\t" << "Total = " << currentTotalEnrgy << endl;
 	  }
 	  break;
 
 	case 2: //velocity verlet NVT integrator with simple temperature scaling
-	  for(i=0;i<settings.nsteps;i++){
-	start = omp_get_wtime();
-	verletNVTscaling(settings, res);
-	end = omp_get_wtime();
-	cout << "Time elapsed for step " << i << " in milliseconds: " << (int)((end-start)*1000) << endl;
+	  for(i=0;i<settings.nsteps;i++) {
+	  				start = omp_get_wtime();
+			verletNVTscaling(settings, res);
+			end = omp_get_wtime();
+  			TotalTime += end - start;
+  			currentKineticEnergy = res.get_kinetic_energy();
+  			currentPotentialEnergy = res.get_potential_energy();
+  			currentTotalEnrgy = res.get_total_energy();
+  			res.print_snapshot(res.get_positions(), res.get_velocities(), settings.n, i);
+			//cout << "Time elapsed for step " << i << " in milliseconds: " << (int)((end-start)*1000) << endl;
+  			cout << i << "\t" << "Kinetic = " << currentKineticEnergy << "\t" << "Potential =  " << currentPotentialEnergy << "\t" << "Total = " << currentTotalEnrgy << endl;
 	  }
 	  break;
 	case 3: //leapfrog NVT integrator with berendsen temperature coupling
@@ -222,7 +230,7 @@ int main(int argc, char* argv[]){
 	  break;
   }
   
-  cout << "Total wall time = " << TotalTime * 1000 << " milliseconds" << endl;
+  cout << "Total wall time = " << TotalTime << " seconds" << endl;
   cout << "Simulation complete." << endl;
 
   return 0;
